@@ -184,7 +184,6 @@ bool master::MapID(string FileName){
     int EID = 1;
     int GID = 1;
     int line = 0;
-    //ofstream output("out.txt");
     while(!InputFile.eof()){
         flag = 0;
         line ++;
