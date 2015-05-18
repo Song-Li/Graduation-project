@@ -1,6 +1,7 @@
 #ifndef RUNJOB_H
 #define RUNJOB_H
 #include <stdio.h>
+#include <set>
 #include <string>
 #include <map>
 #include <fstream>
@@ -80,6 +81,12 @@ struct List_P{
     }
 };
     
+//V1t means the type of the node 
+//Vt == 0 means include ?
+struct tri{
+    int V1,E,V2,V1t,V2t;
+};
+
 
 class runJob
 {
@@ -87,11 +94,15 @@ class runJob
 
         vector<List *>Index;
         vector<List *>Index_con;
+        //the value of the Index_P is vpos
         vector<List_P *>Index_P;
         map<int,int> VID_VPOS;
         
         List *Map = NULL;
         List *Map_con = NULL;
+        //Id_Pat used to store the edge from the first number to the second one
+        //remember the index of the array is the position of the pattern graph
+        //if there is no edge , the value is -1
         int Id_Pat[MAX_Q_V][MAX_Q_V];
         
         int Num_p;

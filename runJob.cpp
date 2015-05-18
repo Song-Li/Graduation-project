@@ -202,15 +202,32 @@ bool runJob::LoadPattern(){
     int now = 0;
     int buf[5];
     int msgtag = PATTAG;
+    vector<tri> tTri;
+    //store tris
+    tTri.clear();
+    //store vertexs
+    map<int,int> vers;
+    vers.clear();
     while(1){
         MPI_Recv(&buf,5,MPI_INT,0,msgtag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
         if(buf[0] == FIN) break;
-        V1 = buf[0];
-        E = buf[2];
-        V2 = buf[3];
-        if(GetList(V1) == NULL) InsertList_P(V1,buf[1]);//insert list as many as possible
-        if(GetList(V2) == NULL) InsertList_P(V2,buf[4]);
-        InsertNode(V1,E,V2,false);
+        tri temp;
+        temp.V1 = buf[0];
+        temp.E = buf[2];
+        temp.V2 = buf[3];
+        temp.V1t = buf[1];
+        temp.V2t = buf[4];
+        tTri.push_back(temp);
+        if(vers.find(temp.V1) == vers.end()) vers.insert(pair<int,int>(temp.V1,temp.V1t));
+        if(vers.find(temp.V2) == vers.end()) vers.insert(pair<int,int>(temp.V2,temp.V2t));
+    }
+    map<int,int>::iterator it;
+    for(it = vers.begin();it != vers.end();++ it){
+        if(GetList(it->first) == NULL) InsertList_P(it->first,it->second);
+    }
+    for(int i = 0;i < tTri.size();++ i){
+        InsertNode(tTri[i].V1,tTri[i].E,tTri[i].V2,false);
+
     }
     GetIdPat();
     return true;
@@ -346,12 +363,14 @@ void runJob::Run(){
     vector<int> vertex;
     vector<int> edge;
     int vpos;
+    Node * tnode;
     List_P * waitnode;
     int waittype;
     int aim = 0;
     next_machine = 0;
     while(1){
         MPI_Recv(&buf,MAX_Q_V + MAX_Q_E,MPI_INT,MPI_ANY_SOURCE,DATATAG,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        //used to test the revieved data
         /*
         for(int i = 0;i < 5;++ i){
             cout << buf[i] << " ";
@@ -378,9 +397,48 @@ void runJob::Run(){
         waitnode = Index_P[vpos];
         waittype = waitnode->type;
         if(waittype != 0) GetAnswer(waitnode->VID,vpos,vertex,edge);
+        //if waittype == 0 means it is a ? node
         else {
-            for(int i = 0;i < Index.size();++ i){
-                GetAnswer(Index[i]->VID,vpos,vertex,edge);
+            //means the node to the vpos
+            int tonode = -1;
+            //means the node from the vpos
+            int fromnode = -1;
+            //check wether this node has a adjustice node that has been set
+            for(int i = 0;i < vpos;++ i){
+                if(Id_Pat[i][vpos] != -1){
+                    fromnode = vertex[i];
+                    break; 
+                }
+                if(Id_Pat[vpos][i] != -1){
+                    tonode = vertex[i];
+                    break;
+                }
+            }
+            if(tonode != -1){
+                tnode = Index_con[tonode]->first;
+                /*
+                for(int i = 0;i < vertex.size();++ i) cout << vertex[i] << " ";
+                cout << endl;
+                cout << "tonode " << tonode << endl;
+                */
+                for(;tnode != NULL;tnode = tnode->next){
+                    GetAnswer(tnode->VID,vpos,vertex,edge);
+                }
+            }
+            else if(fromnode != -1){
+                tnode = Index[fromnode]->first;
+               /* 
+                for(int i = 0;i < vertex.size();++ i) cout << vertex[i] << " ";
+                cout << endl;
+                cout << "fromnode " << fromnode << endl;
+                */
+                for(;tnode != NULL;tnode = tnode->next){
+                    GetAnswer(tnode->VID,vpos,vertex,edge);
+                }
+            }else {
+                for(int i = 0;i < Index.size();++ i){
+                    GetAnswer(Index[i]->VID,vpos,vertex,edge);
+                }
             }
         }
     }    
