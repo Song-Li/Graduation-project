@@ -20,6 +20,7 @@ int main(int argc, char *argv[]){
         runJob RunJob;
         RunJob.myid = myid;
         RunJob.LoadFile();
+       // RunJob.OutPut(myid);
         RunJob.LoadPattern();
         RunJob.Run();
     }

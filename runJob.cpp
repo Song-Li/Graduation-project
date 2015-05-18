@@ -48,17 +48,25 @@ void runJob::OutPut(int myid){
     ofstream convert(name.c_str());
     Node *tn;
     List *list;
+    //output the con index 
+    for(int i = 0;i < Index_con.size();++ i){
+        for(tn = Index_con[i] -> first; tn != NULL; tn = tn -> next){
+            convert << Index_con[i]->VID << "("<< Index_con[i]->Num_Child << ")   " << tn->EID <<"    " << tn -> VID << endl;
+        }
+    }
     /*
+    //output the map
     for(list = Map;list != NULL;list = list -> next){
         for(tn = list->first;tn != NULL;tn = tn->next){
             convert << list->VID << "    " << tn->EID << "   "<< tn->VID << endl;
         }
-    }*/
+    }
     for(int i = 0;i < Index.size();++ i){
         for(tn = Index[i] -> first; tn != NULL; tn = tn -> next){
             convert << Index[i]->VID << "("<< Index[i]->Num_Child << ")   " << tn->EID <<"    " << tn -> VID << endl;
         }
     }
+     */
 
 }
 
@@ -77,6 +85,13 @@ bool runJob::InsertNode(int FVID,int EID,int TVID,bool Data){//edge to vertex
     if(Data){
         node = new Node();
         node->VID = TVID;
+        node->EID = EID;
+        node->next = list->first;
+        list->first = node;
+        (list->Num_Child) ++;
+        list = Index_con[TVID];
+        node = new Node();
+        node->VID = FVID;
         node->EID = EID;
         node->next = list->first;
         list->first = node;
@@ -103,12 +118,20 @@ bool runJob::InsertList(int VID){
         Map = new List();
         Map->VID = VID;
         Index.push_back(Map);
+        Map_con = new List();
+        Map_con->VID = VID;
+        Index_con.push_back(Map_con);
     }else{
         List *list = new List();
         list->VID = VID;
         list->next = Map->next;
         Map->next = list;
         Index.push_back(list);
+        list = new List();
+        list->VID = VID;
+        list->next = Map_con->next;
+        Map_con->next = list;
+        Index_con.push_back(list);
     }
     return true;
 }
@@ -330,6 +353,10 @@ void runJob::Run(){
     while(1){
         MPI_Recv(&buf,MAX_Q_V + MAX_Q_E,MPI_INT,MPI_ANY_SOURCE,DATATAG,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
         /*
+        for(int i = 0;i < 5;++ i){
+            cout << buf[i] << " ";
+        }
+        cout << endl;
         */
         vertex.clear();
         edge.clear();

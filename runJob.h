@@ -86,10 +86,12 @@ class runJob
     public:
 
         vector<List *>Index;
+        vector<List *>Index_con;
         vector<List_P *>Index_P;
         map<int,int> VID_VPOS;
         
         List *Map = NULL;
+        List *Map_con = NULL;
         int Id_Pat[MAX_Q_V][MAX_Q_V];
         
         int Num_p;
