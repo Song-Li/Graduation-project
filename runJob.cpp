@@ -330,10 +330,6 @@ void runJob::Run(){
     while(1){
         MPI_Recv(&buf,MAX_Q_V + MAX_Q_E,MPI_INT,MPI_ANY_SOURCE,DATATAG,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
         /*
-        for(int i = 0;i < 5;++ i){
-            cout << buf[i] << " ";
-        }
-        cout << endl;
         */
         vertex.clear();
         edge.clear();
